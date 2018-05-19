@@ -13,8 +13,7 @@ use AdinanCenci\Images\File;
 /*-----------------------------*/
 
 $file = new File('images/dog.jpeg');
-
-$file->resize(500);
+$file->crop(255, 155, 1125, 1086);
 
 header("Content-type: image/jpeg");
 $file->imagejpg();

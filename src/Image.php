@@ -4,7 +4,6 @@ namespace AdinanCenci\Images;
 class Image 
 {
     protected $width    = 0;
-
     protected $height   = 0;
 
     /** @var float $ratio Quotient between the $width and $height */
@@ -63,9 +62,19 @@ class Image
         return new Image($width, $height, $thumb);
     }
 
-    /** @return bool */
-    public function paste($image, $x, $y, $width, $height) 
+    public function crop($x, $y, $width, $height) 
     {
+        $this->src = imagecrop($this->src, ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height]);
+        $this->updateDimensions();
+        return $this;
+    }
+
+    /** @return bool */
+    public function paste($image, $x = 0, $y = 0, $width = null, $height = null) 
+    {
+        $width  = $width ? $width : $image->width;
+        $height = $height ? $height : $image->height;
+
         return imagecopyresampled($this->src, $image->src, $x, $y, 0, 0, $width, $height, $image->width, $image->height);
     }
 
@@ -267,16 +276,8 @@ class Image
             $matches[3], 
         ];
 
-        if (isset($matches[5]) and $matches[5] == 0) {
-
-            $rgba[] = 127;
-
-        } else if (isset($matches[5])) {
-
-            $perc  = $matches[5] / 1 * 100;
-            $alpha = ceil(127 - (127 / 100 * $perc));
-
-            $rgba[] = $alpha;
+        if (isset($matches[5])) {
+            $rgba[] = $matches[5];
         }
 
         return $rgba;
@@ -291,8 +292,15 @@ class Image
             return array_fill(0, 3, $r);
         }
 
-        $hex = str_split($hexadecimal, 2);
-        return array_map('hexdec', $hex);        
+        $hex    = str_split($hexadecimal, 2);
+        $rgba   = array_map('hexdec', $hex);
+
+        if (isset($rgba[3])) {
+            $perc = ($rgba[3] / 255) * 100;
+            $rgba[3] = 0.01 * $perc;
+        }
+
+        return $rgba;
     }
 
     protected static function createFromType($file, $type) 
@@ -308,8 +316,8 @@ class Image
         $thumb  = $func($file);
 
         if ($type == 'image/png') {
-            imagealphablending($thumb, false);
             imagesavealpha($thumb, true);
+            imagealphablending($thumb, false);
         }
 
         return $thumb;
@@ -333,9 +341,13 @@ class Image
     protected static function trueColor($width, $height) 
     {
         $resource = imagecreatetruecolor($width, $height);
-        //imagealphablending($resource, false);
-        //imagesavealpha($resource, true);
         return $resource;
+    }
+
+    public function saveAlpha() 
+    {
+        imagesavealpha($this->src, true);
+        imagealphablending($this->src, false);  
     }
 
     /** makes sure that $color is a color identifier */
@@ -345,19 +357,21 @@ class Image
 
         if (is_string($color) and substr_count($color, '#')) {
             $color = self::hexadecimalToRgb($color);
-        } else if (is_string($color)) {
+        } else if (is_string($color)) {            
             $color = self::rgbaRegex($color);
         }
 
-
-        if (is_array($color)) {
-            list($r, $g, $b) = $color;
-            $a = isset($color[3]) ? $color[3] : $a;
-        } else if (count(func_get_args()) > 1) {
-            $args = func_get_args();
-            list($r, $g, $b) = $args;
-            $a = isset($args[3]) ? $args[3] : $a;
+        if (isset($color[3]) and $color[3] == 0) {
+            $color[3]   = 127;
+        } else if (isset($color[3])) {
+            $perc       = $color[3] / 1 * 100;
+            $alpha      = ceil(127 - (127 / 100 * $perc));
+            $color[3]   = $alpha;
         }
+
+        $args = count(func_get_args()) > 1 ? func_get_args() : $color;
+        list($r, $g, $b) = $args;
+        $a = isset($args[3]) ? $args[3] : $a;
 
         if ($a == 0) {
             return imagecolorallocate($this->src, $r, $g, $b);

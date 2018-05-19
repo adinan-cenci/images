@@ -16,7 +16,6 @@ use AdinanCenci\Images\Text;
 
 /*-----------------------------*/
 
-$fontFile = 'fonts/Roboto-Bold.ttf';
 $text = 
 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
@@ -27,10 +26,10 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
 
 $t = new Text($text);
-$t->fontFile($fontFile)
+$t->fontFile('fonts/Roboto-Bold.ttf')
 ->alignment('justify')
-->background('#fff')
-->color('#0000ff')
+->color('#fff')
+->background('rgba(255,0,0,0.5)')
 ->padding(20)
 ->width(500);
 

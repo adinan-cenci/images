@@ -16,29 +16,31 @@ use AdinanCenci\Images\Text;
 
 /*-----------------------------*/
 
-$file = new File('images/c.jpeg');
+$file = new File('images/dog.jpeg');
+$file->crop(255, 155, 1125, 1086);
 $file->resize(500);
 
 /*-----------------------------*/
 
-$background = 'rgba(0,0,0,0.5)';
+$text = 
+'Lorem ipsum dolor sit amet, 
+consectetur adipisicing elit.';
 
-$text = new Text('Copyright Foo Bar.');
+$text = new Text($text);
+
 $text->fontFile('fonts/Roboto-Bold.ttf')
-->padding(20)
-->align('left')
-->background($background)
+->alignment('center')
+->background('rgba(0,0,0,0.3)')
 ->color('#fff')
+->padding(20)
 ->fontSize(20)
 ->lineHeight(20);
 
-$watermark = $text->getImage();
+$label = $text->getImage();
 
 /*-----------------------------*/
 
-$watermark->rotate(90, $background, 15);
-
-$file->paste($watermark, 0, 0, $watermark->width, $watermark->height);
+$file->paste($label, ($file->width - $label->width) / 2, $file->height - $label->height);
 
 /*-----------------------------*/
 

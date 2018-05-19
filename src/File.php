@@ -23,7 +23,7 @@ class File extends Image
 
     protected function fixOrientation()
     {
-        $exif   = exif_read_data($this->file);
+        $exif = exif_read_data($this->file);
 
         if (empty($exif['Orientation'])) {
             return false;
