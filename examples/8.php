@@ -1,13 +1,10 @@
-<?php 
+<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 /*-----------------------------*/
 
-require '../src/Image.php';
-require '../src/TrueColor.php';
-require '../src/File.php';
-require '../src/Text.php';
+require '../vendor/autoload.php';
 
 use AdinanCenci\Images\Image;
 use AdinanCenci\Images\TrueColor;
@@ -22,8 +19,8 @@ $file->resize(500);
 
 /*-----------------------------*/
 
-$text = 
-'Lorem ipsum dolor sit amet, 
+$text =
+'Lorem ipsum dolor sit amet,
 consectetur adipisicing elit.';
 
 $text = new Text($text);

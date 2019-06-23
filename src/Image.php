@@ -1,7 +1,7 @@
 <?php
 namespace AdinanCenci\Images;
 
-class Image 
+class Image
 {
     protected $width    = 0;
     protected $height   = 0;
@@ -14,7 +14,7 @@ class Image
     /** @var image resource identifier $src */
     protected $src      = null;
 
-    public function __construct($width, $height, $src = null) 
+    public function __construct($width, $height, $src = null)
     {
         if (! $src) {
             $src = self::create($width, $height);
@@ -26,7 +26,7 @@ class Image
         $this->ratio    = $width / $height;
     }
 
-    public function __get($var) 
+    public function __get($var)
     {
         $readOnly = array('src', 'width', 'height', 'mime', 'ratio', 'file');
         if (in_array($var, $readOnly)) {
@@ -35,6 +35,14 @@ class Image
 
         if ($var == 'half') {
             return $this->oneOfTwo;
+        }
+
+        if ($var == 'isPng') {
+            return $this->mime == 'image/png';
+        }
+
+        if ($var == 'isJpg') {
+            return in_array($this->mime, array('image/jpg', 'image/jpeg'));
         }
 
         if (preg_match('/([a-z]+)Of([A-Z][a-z]+)/', $var, $matches)) {
@@ -47,13 +55,13 @@ class Image
         }
     }
 
-    public function antialias(bool $enabled = true) 
+    public function antialias(bool $enabled = true)
     {
         return imageantialias($this->src, $enabled);
     }
 
     /** @return Image */
-    public function copy($x, $y, $width, $height) 
+    public function copy($x, $y, $width, $height)
     {
         $thumb = self::create($width, $height);
 
@@ -62,7 +70,7 @@ class Image
         return new Image($width, $height, $thumb);
     }
 
-    public function crop($x, $y, $width, $height) 
+    public function crop($x, $y, $width, $height)
     {
         $this->src = imagecrop($this->src, ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height]);
         $this->updateDimensions();
@@ -70,7 +78,7 @@ class Image
     }
 
     /** @return bool */
-    public function paste($image, $x = 0, $y = 0, $width = null, $height = null) 
+    public function paste($image, $x = 0, $y = 0, $width = null, $height = null)
     {
         $width  = $width ? $width : $image->width;
         $height = $height ? $height : $image->height;
@@ -78,29 +86,38 @@ class Image
         return imagecopyresampled($this->src, $image->src, $x, $y, 0, 0, $width, $height, $image->width, $image->height);
     }
 
-    public function centerIt($image) 
+    public function centerIt($image)
     {
         $x = (($this->width - $image->width) / 2);
         $y = (($this->height - $image->height) / 2);
         return $this->paste($image, $x, $y, $image->width, $image->height);
     }
 
-    public function rotate($angle, $color = array(255, 255, 255)) 
+    public function rotate($angle, $color = array(255, 255, 255, 0))
     {
         $color          = $this->allocate($color);
         $this->src      = imagerotate($this->src, $angle, $color);
+
+        if ($this->isPng) {
+          self::alpha($this->src);
+        }
 
         $this->updateDimensions();
         return $this;
     }
 
-    public function resize($width, $height = null) 
+    public function resize($width, $height = null)
     {
         if ($height == null) {
             $height = $width / $this->ratio;
         }
 
         $newSrc = self::trueColor($width, $height);
+
+        if ($this->isPng) {
+            self::alpha($newSrc);
+        }
+
         imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
         $this->src = $newSrc;
 
@@ -111,7 +128,7 @@ class Image
     /**
      * Will fill $this with $image
      */
-    public function fillWith($image, $align = '') 
+    public function fillWith($image, $align = '')
     {
         $x      = 0;
         $y      = 0;
@@ -140,7 +157,7 @@ class Image
      * @param Image $image
      * @return $this
      */
-    public function fit($image, $align = '') 
+    public function fit($image, $align = '')
     {
         $x      = 0;
         $y      = 0;
@@ -163,18 +180,18 @@ class Image
         return $this;
     }
 
-    public function drawEllipse($cx, $cy, $width, $height, $borderColor = array(255, 255, 255)) 
+    public function drawEllipse($cx, $cy, $width, $height, $borderColor = array(255, 255, 255))
     {
         $borderColor = $this->allocate($borderColor);
         return imageellipse($this->src, $cx, $cy, $width, $height, $borderColor);
     }
 
-    /** 
+    /**
      * draws a filled retangle
-     * @param int|array|string $color 
+     * @param int|array|string $color
      * @return bool
      */
-    public function filledRectangle($color, $x = 0, $y = 0, $x2 = null, $y2 = null) 
+    public function filledRectangle($color, $x = 0, $y = 0, $x2 = null, $y2 = null)
     {
         $x2 = $x2 ? $x2 : $this->width;
         $y2 = $y2 ? $y2 : $this->height;
@@ -184,33 +201,33 @@ class Image
     }
 
     /** @return bool */
-    public function drawRetangle($color, $x, $y, $width, $height) 
+    public function drawRetangle($color, $x, $y, $width, $height)
     {
         $x2 = $x + $width;
         $y2 = $y + $height;
         return $this->filledRectangle($color, $x, $y, $x2, $y2);
     }
 
-    public function paint($color) 
+    public function paint($color)
     {
         return $this->drawRetangle($color, 0, 0, $this->width, $this->height);
     }
 
     // Draw a string horizontally
-    public function string($font, $x, $y, $string, $color) 
+    public function string($font, $x, $y, $string, $color)
     {
         $color = $this->allocate($color);
         return imagestring($this->src, $font, $x, $y, $string, $color);
     }
 
-    public function ttfText($fontSize, $angle, $x, $y, $color, $fontFile, $text) 
+    public function ttfText($fontSize, $angle, $x, $y, $color, $fontFile, $text)
     {
         $color  = $this->allocate($color);
         return imagettftext($this->src, $fontSize, $angle, $x, $y, $color, $fontFile, $text);
     }
 
     /** @return bool */
-    public function isWiderThan($image) 
+    public function isWiderThan($image)
     {
         return $this->width > $image->width;
     }
@@ -221,40 +238,40 @@ class Image
     }
 
     /** @return bool */
-    public function isThickerThan($image) 
+    public function isThickerThan($image)
     {
         return $this->ratio > $image->ratio;
     }
 
     /** @return bool */
-    public function isThinerThan($image) 
+    public function isThinerThan($image)
     {
         return $this->ratio < $image->ratio;
     }
 
-    public function imageJpg($filename = null, $quality = 100) 
+    public function imageJpg($filename = null, $quality = 100)
     {
         return self::image('imagejpeg', $this->src, $filename, $quality);
     }
 
-    public function imageGif($filename = null, $quality = 100) 
+    public function imageGif($filename = null, $quality = 100)
     {
         return self::image('imagegif', $this->src, $filename, $quality);
     }
 
-    public function imagePng($filename = null, $quality = 100) 
+    public function imagePng($filename = null, $quality = 100)
     {
         return self::image('imagepng', $this->src, $filename, $quality);
     }
 
-    protected function updateDimensions() 
+    protected function updateDimensions()
     {
         $this->width    = imagesx($this->src);
         $this->height   = imagesy($this->src);
         $this->ratio    = $this->width / $this->height;
     }
 
-    public static function imageTtfBbox($fontSize, $angle = 0, $fontFile, $text) 
+    public static function imageTtfBbox($fontSize, $angle = 0, $fontFile, $text)
     {
         $box            = imagettfbbox($fontSize, $angle, $fontFile, $text);
         $box['width']   = $box[4] - $box[6];
@@ -262,18 +279,18 @@ class Image
         return $box;
     }
 
-    public static function rgbaRegex($string) 
+    public static function rgbaRegex($string)
     {
         $match = preg_match('/([0-9]+),([0-9]+),([0-9]+)(,([0-9.]+))?/', $string, $matches);
-        
+
         if (! $match) {
             return null;
         }
 
         $rgba = [
-            $matches[1], 
-            $matches[2], 
-            $matches[3], 
+            $matches[1],
+            $matches[2],
+            $matches[3],
         ];
 
         if (isset($matches[5])) {
@@ -283,7 +300,7 @@ class Image
         return $rgba;
     }
 
-    public static function hexadecimalToRgb($hexadecimal) 
+    public static function hexadecimalToRgb($hexadecimal)
     {
         $hexadecimal = trim($hexadecimal, '#');
 
@@ -303,12 +320,12 @@ class Image
         return $rgba;
     }
 
-    protected static function createFromType($file, $type) 
+    protected static function createFromType($file, $type)
     {
         $functions = array(
-            'image/gif'     => 'imagecreatefromgif', 
-            'image/png'     => 'imagecreatefrompng', 
-            'image/jpeg'    => 'imagecreatefromjpeg', 
+            'image/gif'     => 'imagecreatefromgif',
+            'image/png'     => 'imagecreatefrompng',
+            'image/jpeg'    => 'imagecreatefromjpeg',
             'image/jpg'     => 'imagecreatefromjpeg'
         );
 
@@ -316,14 +333,13 @@ class Image
         $thumb  = $func($file);
 
         if ($type == 'image/png') {
-            imagesavealpha($thumb, true);
-            imagealphablending($thumb, false);
+            self::alpha($thumb);
         }
 
         return $thumb;
     }
 
-    protected static function image($func, $src, $filename = null, $quality = 100) 
+    protected static function image($func, $src, $filename = null, $quality = 100)
     {
         if ($func == 'imagepng') {
             $quality = round($quality / 14.28);
@@ -332,32 +348,32 @@ class Image
         return $func($src, $filename, $quality);
     }
 
-    protected static function create($width, $height) 
+    protected static function create($width, $height)
     {
         $thumb = imagecreate($width, $height);
         return $thumb;
     }
 
-    protected static function trueColor($width, $height) 
+    protected static function trueColor($width, $height)
     {
         $resource = imagecreatetruecolor($width, $height);
+
         return $resource;
     }
 
-    public function saveAlpha() 
+    public function saveAlpha($bool = true)
     {
-        imagesavealpha($this->src, true);
-        imagealphablending($this->src, false);  
+        self::alpha($this->src, $bool);
     }
 
     /** makes sure that $color is a color identifier */
-    public function allocate($color) 
+    public function allocate($color)
     {
         $r = $g = $b = $a = 0;
 
         if (is_string($color) and substr_count($color, '#')) {
             $color = self::hexadecimalToRgb($color);
-        } else if (is_string($color)) {            
+        } else if (is_string($color)) {
             $color = self::rgbaRegex($color);
         }
 
@@ -384,16 +400,22 @@ class Image
         return $color;
     }
 
-    public static function pointToPixel($points) 
+    public static function alpha($src, $bool = true)
+    {
+        imagesavealpha($src, $bool);
+        imagealphablending($src, !$bool);
+    }
+
+    public static function pointToPixel($points)
     {
         return $points * 1.333333;
     }
 
-    protected static function strToInt($str) 
+    protected static function strToInt($str)
     {
         $str    = strtolower($str);
         $nbrs   = array(
-            'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4, 'five' => 5, 'six' => 6, 'seven' => 7, 'height' => 8, 'nine' => 9, 'ten' => 10, 'eleven' => 11, 'twelve' => 12, 
+            'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4, 'five' => 5, 'six' => 6, 'seven' => 7, 'height' => 8, 'nine' => 9, 'ten' => 10, 'eleven' => 11, 'twelve' => 12,
             'half' => 2, 'third' => 3, 'fourth' => 4, 'fifth' => 5, 'sixth' => 6, 'seventh' => 7, 'eight' => 8, 'nineth' => 9, 'tenth' => 10, 'eleventh' => 11, 'twelfth'
         );
 

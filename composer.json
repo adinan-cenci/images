@@ -1,0 +1,23 @@
+{
+    "name": "adinan-cenci/images",
+    "description": "Library for small editing and thumbnail creation",
+    "type": "library",
+    "keywords": ["image", "thumbnail"],
+    "license": "MIT",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Adinan Cenci",
+            "email": "adinancenci@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "require": {
+        "php" : ">=5.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "AdinanCenci\\Images\\": "src/"
+        }
+    }
+}

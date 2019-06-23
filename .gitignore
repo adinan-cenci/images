@@ -1,0 +1,5 @@
+vendor/
+examples/mp3s/
+phpunit.xml
+composer.lock
+test-phpunit.sh

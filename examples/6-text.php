@@ -1,13 +1,10 @@
-<?php 
+<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 /*-----------------------------*/
 
-require '../src/Image.php';
-require '../src/TrueColor.php';
-require '../src/File.php';
-require '../src/Text.php';
+require '../vendor/autoload.php';
 
 use AdinanCenci\Images\Image;
 use AdinanCenci\Images\TrueColor;
@@ -16,7 +13,7 @@ use AdinanCenci\Images\Text;
 
 /*-----------------------------*/
 
-$text = 
+$text =
 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo

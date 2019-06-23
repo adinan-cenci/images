@@ -4,8 +4,7 @@ ini_set('display_errors', 1);
 
 /*-----------------------------*/
 
-require '../src/Image.php';
-require '../src/File.php';
+require '../vendor/autoload.php';
 
 use AdinanCenci\Images\Image;
 use AdinanCenci\Images\File;

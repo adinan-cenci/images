@@ -1,11 +1,11 @@
 <?php
 namespace AdinanCenci\Images;
 
-class File extends Image  
+class File extends Image
 {
     protected $file = '';
 
-    public function __construct($file) 
+    public function __construct($file)
     {
         $info           = getimagesize($file);
 
@@ -16,7 +16,7 @@ class File extends Image
         $this->ratio    = $this->width / $this->height;
         $this->src      = self::createFromType($file, $this->mime);
 
-        if (in_array($this->mime, ['image/jpg', 'image/jpeg'])) {
+        if ($this->isJpg) {
             $this->fixOrientation();
         }
     }
