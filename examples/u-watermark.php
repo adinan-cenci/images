@@ -13,28 +13,27 @@ use AdinanCenci\Images\Text;
 
 /*-----------------------------*/
 
-$file = new File('images/dog.jpeg');
+$file = new File('images/original.jpeg');
 $file->resize(500);
 
 /*-----------------------------*/
-$background = 'rgba(0,0,0,0.5)';
 
-$text = new Text('Copyright Foo Bar.');
+$text = new Text('Lorem ipsum dolor sit amet,
+consectetur adipisicing elit.');
+
 $text->fontFile('fonts/Roboto-Bold.ttf')
+->alignment('center')
+->background('rgba(0,0,0,0.3)')
+->color('rgba(255,255,255)')
 ->padding(20)
 ->fontSize(20)
-->lineHeight(20)
-->align('left')
-->color('#fff')
-->background($background);
+->lineHeight(20);
 
-$watermark = $text->getImage();
+$label = $text->getImage();
 
 /*-----------------------------*/
 
-$watermark->rotate(90, $background, 15);
-
-$file->paste($watermark, 0, 0, $watermark->width, $watermark->height);
+$file->paste($label);
 
 /*-----------------------------*/
 

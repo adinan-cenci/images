@@ -45,14 +45,14 @@ class Text
 
     public function padding($pdT, $pdR = null, $pdB = null, $pdL = null) 
     {
-        if (!$pdR and !$pdB and !$pdL) {
+        if (!$pdR && !$pdB && !$pdL) {
             $this->paddingTop = $this->paddingRight = $this->paddingBottom = $this->paddingLeft = $pdT;
             return $this;
         }
 
-        if (!$pdB and !$pdL) {
+        if (!$pdB && !$pdL) {
             $this->paddingTop   = $this->paddingBottom = $pdB;
-            $this->paddingRight = $this->paddingLeft = $pdL;
+            $this->paddingRight = $this->paddingLeft   = $pdL;
             return $this;
         }
 

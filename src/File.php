@@ -5,6 +5,8 @@ class File extends Image
 {
     protected $file = '';
 
+    protected $readOnly = array('src', 'width', 'height', 'mime', 'ratio', 'file');
+
     public function __construct($file)
     {
         $info           = getimagesize($file);
@@ -21,6 +23,29 @@ class File extends Image
         }
     }
 
+    public function __get($var) 
+    {
+        if ($var == 'isPng') {
+            return $this->mime == 'image/png';
+        }
+
+        if ($var == 'isJpg') {
+            return in_array($this->mime, array('image/jpg', 'image/jpeg'));
+        }
+
+        if ($var == 'isGif') {
+            return $this->mime == 'image/gif';
+        }
+
+        return parent::__get($var);
+    }
+
+    /**
+     * Some images may have metadata indicating the orientation of the camera 
+     * was in when the picture was taken. This help different devices to display 
+     * the image properly. The gd library will not carry this metadata forwards 
+     * so we need to fix the image by rotating it.
+     */
     protected function fixOrientation()
     {
         $exif = exif_read_data($this->file);

@@ -25,7 +25,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 $t = new Text($text);
 $t->fontFile('fonts/Roboto-Bold.ttf')
 ->alignment('justify')
-->color('#fff')
+->color('rgba(255,255,255)')
 ->background('rgba(255,0,0,0.5)')
 ->padding(20)
 ->width(500);

@@ -6,13 +6,15 @@ ini_set('display_errors', 1);
 
 require '../vendor/autoload.php';
 
-use AdinanCenci\Images\Image;
 use AdinanCenci\Images\File;
 
 /*-----------------------------*/
 
-$file = new File('images/dog.jpeg');
-$file->crop(255, 155, 1125, 1086);
+$file = new File('images/original.jpeg');
+$file->resize(400);
+$file->rotate(45, 'rgba(255,255,255,0.5)');
 
-header("Content-type: image/jpeg");
-$file->imagejpg();
+/*-----------------------------*/
+
+header("Content-type: image/png");
+$file->imagepng();

@@ -6,14 +6,16 @@ ini_set('display_errors', 1);
 
 require '../vendor/autoload.php';
 
-use AdinanCenci\Images\Image;
 use AdinanCenci\Images\File;
+use AdinanCenci\Images\TrueColor;
 
 /*-----------------------------*/
 
-$file = new File('images/dog.jpeg');
+$image = new File('images/original.jpeg');
+$image->resize(500);
+$image->edge();
 
-$file->resize(500);
+/*-----------------------------*/
 
-header("Content-type: image/jpeg");
-$file->imagejpg();
+header("Content-type: image/png");
+$image->imagepng();

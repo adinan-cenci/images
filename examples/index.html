@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Images</title>
+    </head>
+    <body>
+        <main>
+            <h1>Images</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+            <h2>Original</h2>
+            <img src="images/original.jpeg" alt="Original picture" title="Original picture" />
+            
+            <h2>Basic editing</h2>
+
+            <h3>Resize</h3>
+            <img src="./a-resize.php" alt="Resized picture" title="Resized picture" />
+
+            <h3>Crop</h3>
+            <img src="./b-crop.php" alt="Croped picture" title="Croped picture" />
+
+            <h3>Rotate</h3>
+            <img src="./c-rotate.php" alt="Rotated picture" title="Rotated picture" />
+
+            <h3>Paste</h3>
+            <img src="./s-paste.php" alt="Paste" title="Paste" />
+            
+
+            <h2>Helpful methods</h2>
+
+            <h3>Fit</h3>
+            <p>
+                Fit will try to fit $image inside $thumb. 
+                If $thumb is larger than $image it will center it. <br>
+                If $thumb is thinner than $image then it will be centered vertically, otherwise it will be centered 
+                horizontaly.
+            </p>
+
+            <code>
+<pre>$image = new File('my-picture.jpeg');
+$thumb = new TrueColor(200, 300);
+$thumb->fit($image);</pre>
+            </code>
+            <img src="./d-fit.php" alt="Fit inside constrains" title="Fit inside constrains" />
+
+            
+            <h3>Fill</h3>
+            <img src="./e-fill.php" alt="Fill inside constrains" title="Fill inside constrains" />
+
+
+            <h2>Invert</h2>
+            <img src="./f-invert.php" alt="Invert colors" title="Invert colors" />
+
+
+            <h2>Text</h2>
+
+            <h3>Write</h3>
+            <img src="./t-write.php" alt="Write" title="Write" />
+
+
+            <h3>Watermark</h3>
+            <img src="./u-watermark.php" alt="Watermark" title="Watermark" />
+
+
+            <h3>Watermark</h3>
+            <img src="./v-watermark.php" alt="Watermark" title="Watermark" />
+
+
+            <h2>Filters</h2>
+
+            <h3>Grey Scale</h3>
+            <img src="./g-grey-scale.php" alt="Grey Scale" title="Grey Scale" />
+
+
+            <h3>Brightness</h3>
+            <img src="./h-brightness.php" alt="Brightness" title="Brightness" />
+
+
+            <h3>Contrast</h3>
+            <img src="./i-contrast.php" alt="Contrast" title="Contrast" />
+
+
+            <h3>Colorize</h3>
+            <img src="./j-colorize.php" alt="Colorize" title="Colorize" />  
+
+
+            <h3>Edge</h3>
+            <img src="./k-edge.php" alt="Edge" title="Edge" />
+
+
+            <h3>Boss</h3>
+            <img src="./l-boss.php" alt="Boss" title="Boss" />          
+
+            
+            <h3>Blur</h3>
+            <img src="./m-blur.php" alt="Blur" title="Blur" />
+
+
+            <h3>Gausian Blur</h3>
+            <img src="./n-gausian-blur.php" alt="Gausian Blur" title="Gausian Blur" />
+
+
+            <h3>Mean Removal</h3>
+            <img src="./o-mean-removal.php" alt="Mean Removal" title="Mean Removal" />
+
+
+            <h3>Smooth</h3>
+            <img src="./p-smooth.php" alt="Smooth" title="Smooth" />
+
+            
+            <h3>Pixelate</h3>
+            <img src="./q-pixelate.php" alt="Pixelate" title="Pixelate" />
+
+
+            <h3>Scatter</h3>
+            <img src="./r-scatter.php" alt="Scatter" title="Scatter" />
+
+        </main>
+        <style>
+        body {
+            margin: 0px;
+            font-family: 'Noto Sans', 'Cantarell', 'Rotobo', 'Arial';
+            font-size: 16px;
+            line-height: 1.5;
+            color: #fafbfc;
+            background-color: #25272A;
+        }
+
+        h1 {
+            font-size: 2em;
+            line-height: 1.5;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            line-height: 1.5em;
+        }
+
+        h2, h1 {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #5e7f9a;
+        }
+
+        main {
+            width: 960px;
+            max-width: calc(100% - 20px);
+            margin: 0px auto;
+        }
+
+        code {
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px auto;
+            color: #d1e8ff;
+            background: #141414;
+        }
+
+            code pre {
+                margin: 0px;
+            }
+
+        img {
+            display: block;
+            max-width: 100%;
+            border: solid 10px #fff;
+            margin: 0px auto;
+            background-color: #ff0000;
+        }
+
+        </style>
+    </body>
+</html>

@@ -6,14 +6,16 @@ ini_set('display_errors', 1);
 
 require '../vendor/autoload.php';
 
-use AdinanCenci\Images\Image;
 use AdinanCenci\Images\File;
+use AdinanCenci\Images\TrueColor;
 
 /*-----------------------------*/
 
-$png = new File('images/transparent-png.png');
+$image = new File('images/original.jpeg');
+$image->resize(500);
+$image->colorize(18, 50, 190);
 
 /*-----------------------------*/
 
 header("Content-type: image/png");
-$png->imagepng();
+$image->imagepng();
