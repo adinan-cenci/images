@@ -54,10 +54,6 @@ $thumb->fit($image);</pre>
             <img src="./e-fill.php" alt="Fill inside constrains" title="Fill inside constrains" />
 
 
-            <h2>Invert</h2>
-            <img src="./f-invert.php" alt="Invert colors" title="Invert colors" />
-
-
             <h2>Text</h2>
 
             <h3>Write</h3>
@@ -68,61 +64,81 @@ $thumb->fit($image);</pre>
             <img src="./u-watermark.php" alt="Watermark" title="Watermark" />
 
 
-            <h3>Watermark</h3>
-            <img src="./v-watermark.php" alt="Watermark" title="Watermark" />
-
-
             <h2>Filters</h2>
 
-            <h3>Grey Scale</h3>
-            <img src="./g-grey-scale.php" alt="Grey Scale" title="Grey Scale" />
-
-
-            <h3>Brightness</h3>
-            <img src="./h-brightness.php" alt="Brightness" title="Brightness" />
-
-
-            <h3>Contrast</h3>
-            <img src="./i-contrast.php" alt="Contrast" title="Contrast" />
-
-
-            <h3>Colorize</h3>
-            <img src="./j-colorize.php" alt="Colorize" title="Colorize" />  
-
-
-            <h3>Edge</h3>
-            <img src="./k-edge.php" alt="Edge" title="Edge" />
-
-
-            <h3>Boss</h3>
-            <img src="./l-boss.php" alt="Boss" title="Boss" />          
-
-            
-            <h3>Blur</h3>
-            <img src="./m-blur.php" alt="Blur" title="Blur" />
-
-
-            <h3>Gausian Blur</h3>
-            <img src="./n-gausian-blur.php" alt="Gausian Blur" title="Gausian Blur" />
-
-
-            <h3>Mean Removal</h3>
-            <img src="./o-mean-removal.php" alt="Mean Removal" title="Mean Removal" />
-
-
-            <h3>Smooth</h3>
-            <img src="./p-smooth.php" alt="Smooth" title="Smooth" />
-
-            
-            <h3>Pixelate</h3>
-            <img src="./q-pixelate.php" alt="Pixelate" title="Pixelate" />
-
-
-            <h3>Scatter</h3>
-            <img src="./r-scatter.php" alt="Scatter" title="Scatter" />
+            <table>
+                <tr>
+                    <td>
+                        <h3>Invert</h3>
+                        <img src="./f-invert.php" alt="Invert colors" title="Invert colors" />
+                    </td>
+                    <td>
+                        <h3>Grey Scale</h3>
+                        <img src="./g-grey-scale.php" alt="Grey Scale" title="Grey Scale" />
+                    </td>
+                    <td>
+                        <h3>Brightness</h3>
+                        <img src="./h-brightness.php" alt="Brightness" title="Brightness" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Contrast</h3>
+                        <img src="./i-contrast.php" alt="Contrast" title="Contrast" />
+                    </td>
+                    <td>
+                        <h3>Colorize</h3>
+                        <img src="./j-colorize.php" alt="Colorize" title="Colorize" /> 
+                    </td>
+                    <td>
+                        <h3>Edge</h3>
+                        <img src="./k-edge.php" alt="Edge" title="Edge" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Boss</h3>
+                        <img src="./l-boss.php" alt="Boss" title="Boss" />
+                    </td>
+                    <td>
+                        <h3>Blur</h3>
+                        <img src="./m-blur.php" alt="Blur" title="Blur" />
+                    </td>
+                    <td>
+                        <h3>Gausian Blur</h3>
+                        <img src="./n-gausian-blur.php" alt="Gausian Blur" title="Gausian Blur" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Mean Removal</h3>
+                        <img src="./o-mean-removal.php" alt="Mean Removal" title="Mean Removal" />
+                    </td>
+                    <td>
+                        <h3>Smooth</h3>
+                        <img src="./p-smooth.php" alt="Smooth" title="Smooth" />
+                    </td>
+                    <td>
+                        <h3>Pixelate</h3>
+                        <img src="./q-pixelate.php" alt="Pixelate" title="Pixelate" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Scatter</h3>
+                        <img src="./r-scatter.php" alt="Scatter" title="Scatter" />
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
 
         </main>
         <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0px;
             font-family: 'Noto Sans', 'Cantarell', 'Rotobo', 'Arial';
@@ -145,6 +161,10 @@ $thumb->fit($image);</pre>
         h2, h1 {
             padding-bottom: 10px;
             border-bottom: 1px solid #5e7f9a;
+        }
+
+        table {
+            border-collapse: collapse;
         }
 
         main {
@@ -171,7 +191,7 @@ $thumb->fit($image);</pre>
             max-width: 100%;
             border: solid 10px #fff;
             margin: 0px auto;
-            background-color: #ff0000;
+            background-color: #54a5f7;
         }
 
         </style>

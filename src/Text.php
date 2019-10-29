@@ -28,7 +28,7 @@ class Text
 
     public function __construct($text) 
     {
-        $this->text = str_replace("\r", '', $text);
+        $this->text = str_replace("\r", '', $text); // fuck off windows
     }
 
     public function width($w) 
@@ -131,8 +131,8 @@ class Text
         
         if ($this->maxWidth == false and $this->width == false) {
             $d                  = $this->textDim($this->text);
-            $this->imageWidth   = $d['width'] + $this->paddingLeft + $this->paddingRight;
-            $this->imageHeight  = $d['height'] + $this->paddingTop + $this->paddingBottom;
+            $this->imageWidth   = $d['width']  + $this->paddingLeft + $this->paddingRight;
+            $this->imageHeight  = $d['height'] + $this->paddingTop  + $this->paddingBottom;
             return;
         } else if ($this->width) {
             $this->imageWidth = $this->width;
@@ -174,13 +174,13 @@ class Text
             $this->imageWidth   = $longestLine + $this->paddingLeft + $this->paddingRight;
         }
 
-        $this->imageHeight  = $countLines * Image::pointToPixel($this->lineHeight) + $this->paddingTop + $this->paddingBottom;
+        $this->imageHeight  = $countLines * Helper::pointToPixel($this->lineHeight) + $this->paddingTop + $this->paddingBottom;
     }
 
     protected function prepareImage() 
     {
         $image = new Image($this->imageWidth, $this->imageHeight);
-        $image->paint($this->background);
+        $image->fill($this->background);
 
         return $image;
     }
@@ -188,7 +188,7 @@ class Text
     protected function printTextLeft() 
     {
         $image      = $this->prepareImage();
-        $lineHeight = Image::pointToPixel($this->lineHeight);
+        $lineHeight = Helper::pointToPixel($this->lineHeight);
         
         $x          = $this->paddingLeft;
         $y          = $lineHeight + $this->paddingTop;
@@ -204,7 +204,7 @@ class Text
     protected function printTextRight() 
     {
         $image          = $this->prepareImage();
-        $lineHeight     = Image::pointToPixel($this->lineHeight);
+        $lineHeight     = Helper::pointToPixel($this->lineHeight);
         
         $contentWidth   = $this->imageWidth - $this->paddingLeft - $this->paddingRight;
         $y              = $lineHeight + $this->paddingTop;
@@ -224,7 +224,7 @@ class Text
     protected function printTextCenter() 
     {
         $image          = $this->prepareImage();
-        $lineHeight     = Image::pointToPixel($this->lineHeight);
+        $lineHeight     = Helper::pointToPixel($this->lineHeight);
         
         $y              = $lineHeight + $this->paddingTop;
 
@@ -243,7 +243,7 @@ class Text
     protected function printTextJustify() 
     {
         $image          = $this->prepareImage();
-        $lineHeight     = Image::pointToPixel($this->lineHeight);
+        $lineHeight     = Helper::pointToPixel($this->lineHeight);
         
         $y              = $lineHeight + $this->paddingTop;
 

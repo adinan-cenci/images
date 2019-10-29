@@ -15,6 +15,6 @@ class TrueColor extends Image
         $this->ratio    = $width / $height;
 
         $this->alpha();
-        $this->paint('rgba(0,0,0,2)');
+        $this->fill('rgba(0,0,0,2)');
     }
 }

@@ -35,18 +35,13 @@ class Image
             return $this->{$var};
         }
 
-        if ($var == 'half') {
-            return $this->oneOfTwo;
+        if (preg_match('/(.+)Height/', $var, $matches)) {
+            return $this->parseHeightFraction($matches[1]);
         }
 
-        if (preg_match('/([a-z]+)Of([A-Z][a-z]+)/', $var, $matches)) {
-            $fraction   = self::strToInt($matches[1]);
-            $divisor    = self::strToInt($matches[2]);
+        $var = str_replace('Width', '', $var);
 
-            $value      = $this->width;
-
-            return ($value / $divisor) * $fraction;
-        }
+        return $this->parseWidthFraction($var);
     }
 
     /** 
@@ -68,6 +63,34 @@ class Image
     /***********************************************
     *** Edditing
     ************************************************/
+
+    /**
+     * If $height is not informed, the ratio will be preserved.
+     * The same works if you inform the height but pass a falsy 
+     * value to $width
+     */
+    public function resize($width, $height = null)
+    {
+        if (!$width && !$height) {
+            trigger_error('Inform the image\s new dimensions');
+        }
+
+        if ($width && !$height) {
+            $height = $width / $this->ratio;
+        } elseif (!$width && $height) {
+            $width = $height * $this->ratio;
+        }
+
+        $newSrc = self::newTrueColorTransparent($width, $height);
+        
+        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
+        $this->src = $newSrc;
+        $this->saveAlpha        = true;
+        $this->alphaBlending    = false;
+
+        $this->updateDimensions();
+        return $this;
+    }
 
     public function crop($x, $y, $width, $height)
     {
@@ -99,34 +122,6 @@ class Image
         $this->alpha(true);
 
         return $success;
-    }
-
-    /**
-     * If $height is not informed, the ratio will be preserved.
-     * The same works if you inform the height but pass a falsy 
-     * value to $width
-     */
-    public function resize($width, $height = null)
-    {
-        if (!$width && !$height) {
-            trigger_error('Inform the image\s new dimensions');
-        }
-
-        if ($width && !$height) {
-            $height = $width / $this->ratio;
-        } elseif (!$width && $height) {
-            $width = $height * $this->ratio;
-        }
-
-        $newSrc = self::newTrueColorTransparent($width, $height);
-        
-        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
-        $this->src = $newSrc;
-        $this->saveAlpha        = true;
-        $this->alphaBlending    = false;
-
-        $this->updateDimensions();
-        return $this;
     }
 
     public function rotate($angle, $color = 'rgba(0,0,0,0)')
@@ -222,18 +217,28 @@ class Image
         imagefilter($this->src, IMG_FILTER_SMOOTH, $level);
     }
 
+    /**
+     * @param int $size Block size in pixels
+     * @param bool $advanced Whether to use advanced pixelation effect or not
+     */
     public function pixelate($size, $advanced = false) 
     {
         imagefilter($this->src, IMG_FILTER_PIXELATE, $size, $advanced);
     }
 
-    public function scatter($level, $addition, $color = null) 
+    /**
+     * @param int $substraction Substraction level. This must not be higher or equal to the $addition level.
+     * @param int $addition Effect addition level.
+     * @param identifier/string $color
+     */
+
+    public function scatter($substraction, $addition, $color = null) 
     {
         if (! defined('IMG_FILTER_SCATTER')) {
             return false;
         }
 
-        imagefilter($this->src, IMG_FILTER_SCATTER, $level, $addition, $color);
+        imagefilter($this->src, IMG_FILTER_SCATTER, $substraction, $addition, $color);
     }    
 
     /***********************************************
@@ -342,9 +347,10 @@ class Image
         return $this->filledRectangle($color, $x, $y, $x2, $y2);
     }
 
-    public function paint($color)
+    public function fill($color)
     {
-        return $this->drawRetangle($color, 0, 0, $this->width, $this->height);
+        $color = $this->allocateColor($color);
+        imagefill($this->src, 0, 0, $color);
     }
 
     // Draw a string horizontally
@@ -478,117 +484,81 @@ class Image
         return imagewbmp($this->src, $filename, $color);
     }
 
-    /**
-     * Converts a string containing rgb values 
-     * into an array of parameter that can be passed 
-     * to imagecolorallocate
-     * 
-     * Accepts:
-     * 255,255,255
-     * 255,255,255,255
-     * 
-     * @param string $string rgb values separated with ,
-     * @return array
-     */
-    public static function readRgbColor($string)
-    {
-        $match = preg_match('/([0-9]+),([0-9]+),([0-9]+)(,([0-9.]+))?/', $string, $matches);
+    /***********************************************
+    *** Size
+    ************************************************/
 
-        if (! $match) {
+    public function getWidthPerc($perc) 
+    {
+        return ($this->width / 100) * $perc;
+    }
+
+    public function getHeightPerc($perc) 
+    {
+        return ($this->width / 100) * $perc;   
+    }
+
+    public function getPerc($perc) 
+    {
+        return $this->getWidthPerc($perc);
+    }
+
+    //--------------
+
+    public function getWidthFraction($numerator, $denominator) 
+    {
+        return Helper::getFraction($this->width, $numerator, $denominator);
+    }
+
+    public function getHeightFraction($numerator, $denominator) 
+    {
+        return Helper::getFraction($this->height, $numerator, $denominator);
+    }
+
+    //--------------
+
+    protected function parseWidthFraction($str) 
+    {
+        if (! $fr = Helper::parseFraction($str)) {
             return null;
         }
 
-        $rgba = array(
-            $matches[1],
-            $matches[2],
-            $matches[3],
-        );
-
-
-        if (isset($matches[4])) {
-
-            $alpha = (float) $matches[5];
-
-            if ($alpha > 1) {
-                $alpha = $alpha / 255;
-            }
-
-            $rgba[3] = $alpha;
-        } else {
-            $rgba[3] = false;
-        }
-
-        return $rgba;
+        return $this->getWidthFraction($fr['numerator'], $fr['denominator']);
     }
 
-    /**
-     * Converts a string containing an hexadecimal 
-     * representation of a color into an array of 
-     * parameters that can be passed to 
-     * imagecolorallocate
-     * 
-     * Accepts:
-     * 000        shorthand
-     * #000       hash prefixed
-     * 000000     full
-     * 000000ff   full + alpha
-     * #000000    hash prefixed
-     * #000000ff  hash prefixed + alpha
-     * 
-     * @param string $hexadecimal Hexadecimal color representation
-     * @return array
-     */
-    public static function readHexadecimalColor($hexadecimal)
+    protected function parseHeightFraction($str) 
     {
-        $hexadecimal = trim($hexadecimal, '#');
-
-        if (strlen($hexadecimal) == 3) {
-            $r = hexdec(substr($hexadecimal, 0, 2));
-            $hex = array_fill(0, 3, $r);
-        } else {
-            $hex    = str_split($hexadecimal, 2);
+        if (! $fr = Helper::parseFraction($str)) {
+            return null;
         }
 
-        $rgba   = array_map('hexdec', $hex);
-
-        if (isset($rgba[3])) {
-            $perc = ($rgba[3] / 255) * 100;
-            $rgba[3] = 0.01 * $perc;
-        } else {
-            $rgba[3] = false;
-        }
-
-        return $rgba;
+        return $this->getHeightFraction($fr['numerator'], $fr['denominator']);
     }
 
-    public static function color($color) 
-    {
-        if (is_array($color) && count($color) <= 4) {
-            return array_pad($color, 4, null);
-        } else if (is_string($color) && substr_count($color, ',')) {
-            $rgba = self::readRgbColor($color);
-        } else if (is_string($color) && (substr_count($color, '#') || strlen($color) <= 9) ) {
-            $rgba = self::readHexadecimalColor($color);
-        } else {
-            return array();
-        }
+    //--------------
 
-        return $rgba;
+    /** makes sure that $color is a color identifier */
+    public function allocateColor($color)
+    {
+        $r = $g = $b = $a = 0;
+
+        $rgba = Helper::colorToAlocate($color);
+
+        list($r, $g, $b, $a) = $rgba;
+
+        return $a === false ?
+            imagecolorallocate($this->src, $r, $g, $b) : 
+            imagecolorallocatealpha($this->src, $r, $g, $b, $a);
     }
 
-    public static function colorToAlocate($color) 
+    public static function newTrueColorTransparent($width, $height) 
     {
-        $rgba = self::color($color);
-
-        if (isset($rgba[3]) && $rgba[3] === 0) {
-            $rgba[3]   = 127;
-        } else if ($rgba[3]) {
-            $perc       = $rgba[3] / 1 * 100;
-            $alpha      = ceil(127 - (127 / 100 * $perc));
-            $rgba[3]    = $alpha;
-        }
-
-        return $rgba;
+        $src = imagecreatetruecolor($width, $height);
+        imagesavealpha($src, true);
+        imagealphablending($src, false);
+        $transparent = imagecolorallocatealpha($src, 0, 0, 0, 127);
+        imagefill($src, 0, 0, $transparent);
+        return $src;
     }
 
     protected static function createFromType($file, $type)
@@ -620,53 +590,5 @@ class Image
         }
 
         return $func($src, $filename, $quality);
-    }
-
-    /** makes sure that $color is a color identifier */
-    public function allocateColor($color)
-    {
-        $r = $g = $b = $a = 0;
-
-        $rgba = self::colorToAlocate($color);
-
-        list($r, $g, $b, $a) = $rgba;
-
-        return $a == false ?
-            imagecolorallocate($this->src, $r, $g, $b) : 
-            imagecolorallocatealpha($this->src, $r, $g, $b, $a);
-    }
-
-    public static function newTrueColorTransparent($width, $height) 
-    {
-        $src = imagecreatetruecolor($width, $height);
-        imagesavealpha($src, true);
-        imagealphablending($src, false);
-        $transparent = imagecolorallocatealpha($src, 0, 0, 0, 127);
-        imagefill($src, 0, 0, $transparent);
-        return $src;
-    }
-
-    /* fuck
-    public static function alpha($src, $bool = true)
-    {
-        $s = imagesavealpha($src, $bool);
-        imagealphablending($src, !$bool);
-        return $s;
-    }*/
-
-    public static function pointToPixel($points)
-    {
-        return $points * 1.333333;
-    }
-
-    protected static function strToInt($str)
-    {
-        $str    = strtolower($str);
-        $nbrs   = array(
-            'one' => 1, 'two' => 2, 'three' => 3, 'four' => 4, 'five' => 5, 'six' => 6, 'seven' => 7, 'height' => 8, 'nine' => 9, 'ten' => 10, 'eleven' => 11, 'twelve' => 12,
-            'half' => 2, 'third' => 3, 'fourth' => 4, 'fifth' => 5, 'sixth' => 6, 'seventh' => 7, 'eight' => 8, 'nineth' => 9, 'tenth' => 10, 'eleventh' => 11, 'twelfth'
-        );
-
-        return isset($nbrs[$str]) ? $nbrs[$str] : false;
     }
 }
