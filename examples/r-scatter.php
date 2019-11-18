@@ -17,5 +17,5 @@ $image->scatter(50, 30);
 
 /*-----------------------------*/
 
-//header("Content-type: image/png");
+header("Content-type: image/png");
 $image->imagepng();
