@@ -318,7 +318,6 @@ class Image
         return $this;
     }
 
-
     public function drawEllipse($cx, $cy, $width, $height, $borderColor = array(255, 255, 255))
     {
         $borderColor = $this->allocateColor($borderColor);
@@ -559,6 +558,16 @@ class Image
         $transparent = imagecolorallocatealpha($src, 0, 0, 0, 127);
         imagefill($src, 0, 0, $transparent);
         return $src;
+    }
+
+    public static function createFromString($data) 
+    {
+        //$data = base64_decode($data);
+        $src  = imagecreatefromstring($data);
+        $w    = imagesx($src);
+        $h    = imagesy($src);
+
+        return new self($w, $h, $src);
     }
 
     protected static function createFromType($file, $type)

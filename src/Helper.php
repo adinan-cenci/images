@@ -16,19 +16,27 @@ class Helper
         return $rgba;
     }
 
+    /**
+     * Normalizes data.
+     * Receives the representation of a color, be in rgb or 
+     * hexadecimal, alpha channel or no and return a 4 item 
+     * array ( red, green, blue, alpha )
+     */
     public static function color($color) 
     {
         if (is_array($color) && count($color) <= 4) {
             return array_pad($color, 4, null);
-        } else if (is_string($color) && substr_count($color, ',')) {
-            $rgba = Helper::readRgbColor($color);
-        } else if (is_string($color) && (substr_count($color, '#') || strlen($color) <= 9) ) {
-            $rgba = Helper::readHexadecimalColor($color);
-        } else {
-            return array();
         }
 
-        return $rgba;
+        if (is_string($color) && substr_count($color, ',')) {
+            return Helper::readRgbColor($color);
+        }
+
+        if (is_string($color) && (substr_count($color, '#') || strlen($color) <= 9) ) {
+            return Helper::readHexadecimalColor($color);
+        }
+        
+        return array();
     }
 
     /**
