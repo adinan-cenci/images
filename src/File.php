@@ -7,7 +7,7 @@ class File extends Image
 
     protected $readOnly = array('src', 'width', 'height', 'mime', 'ratio', 'file');
 
-    public function __construct($file)
+    public function __construct(string $file)
     {
         $info           = getimagesize($file);
 

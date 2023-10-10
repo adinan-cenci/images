@@ -15,7 +15,7 @@ class Text
 
     protected $width            = null;
     protected $maxWidth         = null;
-    
+
     protected $paddingTop       = 0;
     protected $paddingRight     = 0;
     protected $paddingBottom    = 0;
@@ -112,7 +112,7 @@ class Text
         switch ($this->alignment) {
             case 'left':
                 return $this->printTextLeft();
-                break;            
+                break;
             case 'center':
                 return $this->printTextCenter();
                 break;
@@ -126,9 +126,9 @@ class Text
     }
 
     public function sortLines() 
-    {        
+    {
         $this->lines    = explode("\n", $this->text);
-        
+
         if ($this->maxWidth == false and $this->width == false) {
             $d                  = $this->textDim($this->text);
             $this->imageWidth   = $d['width']  + $this->paddingLeft + $this->paddingRight;
@@ -154,8 +154,8 @@ class Text
 
             $newLine = '';
 
-            while ($w > $mxLw) {                
-                $word       = $this->removeLastWord($line);                
+            while ($w > $mxLw) {
+                $word       = $this->removeLastWord($line);
                 $newLine    = $word.' '.$newLine;
                 $w          = $this->textWidth($line);
             }
@@ -179,7 +179,10 @@ class Text
 
     protected function prepareImage() 
     {
-        $image = new Image($this->imageWidth, $this->imageHeight);
+        $w = (int) $this->imageWidth;
+        $h = (int) $this->imageHeight;
+
+        $image = new Image($w, $h);
         $image->fill($this->background);
 
         return $image;
@@ -189,7 +192,7 @@ class Text
     {
         $image      = $this->prepareImage();
         $lineHeight = Helper::pointToPixel($this->lineHeight);
-        
+
         $x          = $this->paddingLeft;
         $y          = $lineHeight + $this->paddingTop;
 
@@ -225,7 +228,7 @@ class Text
     {
         $image          = $this->prepareImage();
         $lineHeight     = Helper::pointToPixel($this->lineHeight);
-        
+
         $y              = $lineHeight + $this->paddingTop;
 
         foreach ($this->lines as $line) {
@@ -233,7 +236,10 @@ class Text
             $w = $this->textWidth($line);
             $x = ($this->imageWidth - $w) / 2;
 
-            $image->ttfText($this->fontSize, 0, $x, $y, $this->color, $this->fontFile, $line);
+            $x2 = (int) $x;
+            $y2 = (int) $y;
+
+            $image->ttfText($this->fontSize, 0, $x2, $y2, $this->color, $this->fontFile, $line);
             $y += $lineHeight;
         }
 
@@ -244,7 +250,7 @@ class Text
     {
         $image          = $this->prepareImage();
         $lineHeight     = Helper::pointToPixel($this->lineHeight);
-        
+
         $y              = $lineHeight + $this->paddingTop;
 
         foreach ($this->lines as $line) {
@@ -253,11 +259,13 @@ class Text
             $whiteSpace = ($this->imageWidth - $this->paddingLeft - $this->paddingRight - $this->textWidth(str_replace(' ', '', $line))) / (count($words) - 1) ;
 
             foreach ($words as $word) {
+                $x = (int) $x;
+                $y = (int) $y;
                 $image->ttfText($this->fontSize, 0, $x, $y, $this->color, $this->fontFile, $word);
                 $x += $this->textWidth($word) + $whiteSpace;
             }
 
-            $y += $lineHeight;         
+            $y += $lineHeight;
         }
 
         return $image;

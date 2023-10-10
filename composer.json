@@ -4,7 +4,6 @@
     "type": "library",
     "keywords": ["image", "thumbnail"],
     "license": "MIT",
-    "version": "0.1.0",
     "authors": [
         {
             "name": "Adinan Cenci",

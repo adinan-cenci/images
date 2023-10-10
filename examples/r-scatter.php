@@ -13,7 +13,7 @@ use AdinanCenci\Images\TrueColor;
 
 $image = new File('images/original.jpeg');
 $image->resize(500);
-$image->scatter(50, 30);
+$image->scatter(3, 5);
 
 /*-----------------------------*/
 

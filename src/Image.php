@@ -3,11 +3,11 @@ namespace AdinanCenci\Images;
 
 class Image
 {
-    protected $width         = 0;
-    protected $height        = 0;
+    protected int $width     = 0;
+    protected int $height    = 0;
 
     /** @var float $ratio Quotient between the $width and $height */
-    protected $ratio         = 0;
+    protected float $ratio   = 0;
 
     /** @var image resource identifier $src */
     protected $src           = null;
@@ -17,7 +17,7 @@ class Image
 
     protected $readOnly      = array('src', 'width', 'height', 'ratio');
 
-    public function __construct($width, $height, $src = null)
+    public function __construct(int $width, int $height, $src = null)
     {
         if (! $src) {
             $src = imagecreate($width, $height);
@@ -30,7 +30,7 @@ class Image
     }
 
     public function __get($var)
-    {        
+    {
         if (in_array($var, $this->readOnly)) {
             return $this->{$var};
         }
@@ -69,21 +69,23 @@ class Image
      * The same works if you inform the height but pass a falsy 
      * value to $width
      */
-    public function resize($width, $height = null)
+    public function resize(int $width, ?int $height = null)
     {
         if (!$width && !$height) {
             trigger_error('Inform the image\s new dimensions');
         }
 
         if ($width && !$height) {
-            $height = $width / $this->ratio;
+            $height = (int) ($width / $this->ratio);
         } elseif (!$width && $height) {
-            $width = $height * $this->ratio;
+            $width = (int) ($height * $this->ratio);
         }
 
-        $newSrc = self::newTrueColorTransparent($width, $height);
-        
-        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
+        $newSrc = self::newTrueColorTransparent((int) $width, (int) $height);
+
+        $w = (int) $this->width;
+        $h = (int) $this->height;
+        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $w, $h);
         $this->src = $newSrc;
         $this->saveAlpha        = true;
         $this->alphaBlending    = false;
@@ -103,7 +105,7 @@ class Image
      * @param Image/resource $image Accepts an Image object or an image resource identifier.
      * @return bool 
      */
-    public function paste($image, $x = 0, $y = 0, $width = null, $height = null)
+    public function paste($image, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null)
     {
         if ($image instanceof Image) {
             $width      = $width  ? $width  : $image->width;
@@ -115,9 +117,14 @@ class Image
             $height     = $height ? $height : imagesy($image);
         }
 
+        $width  = (int) $width;
+        $height = (int) $height;
+
         $this->alpha(false);
 
-        $success = imagecopyresampled($this->src, $resource, $x, $y, 0, 0, $width, $height, $image->width, $image->height);
+        $w = (int) $image->width;
+        $h = (int) $image->height;
+        $success = imagecopyresampled($this->src, $resource, $x, $y, 0, 0, $width, $height, $w, $h);
 
         $this->alpha(true);
 
@@ -172,7 +179,7 @@ class Image
      * Adds or subtract rgb values from each pixel
      * From -255 to 255
      */
-    public function colorize($r, $g, $b, $a = null) 
+    public function colorize($r, $g, $b, $a = 0) 
     {
         imagefilter($this->src, IMG_FILTER_COLORIZE, $r, $g, $b, $a);
     }
@@ -232,14 +239,14 @@ class Image
      * @param identifier/string $color
      */
 
-    public function scatter($substraction, $addition, $color = null) 
+    public function scatter($substraction, $addition, $color = []) 
     {
         if (! defined('IMG_FILTER_SCATTER')) {
             return false;
         }
 
         imagefilter($this->src, IMG_FILTER_SCATTER, $substraction, $addition, $color);
-    }    
+    }
 
     /***********************************************
     *** Helpful methods
@@ -248,8 +255,8 @@ class Image
     /** $paste $image at center of this one */
     public function centerIt($image)
     {
-        $x = (($this->width  - $image->width)  / 2);
-        $y = (($this->height - $image->height) / 2);
+        $x = (int) (($this->width  - $image->width)  / 2);
+        $y = (int) (($this->height - $image->height) / 2);
         return $this->paste($image, $x, $y, $image->width, $image->height);
     }
 
@@ -276,6 +283,11 @@ class Image
             $x = (($width - $this->width) / 2) * -1;
         }
 
+        $x      = (int) $x;
+        $y      = (int) $y;
+        $width  = (int) $width;
+        $height = (int) $height;
+
         $this->paste($image, $x, $y, $width, $height);
         return $this;
     }
@@ -299,7 +311,7 @@ class Image
             $y      = ($this->height - $image->height) / 2;
 
         } else if ($this->isThinnerThan($image)) {
-        
+
             $width  = $this->width;
             $height = $this->width / $image->ratio;
 
@@ -313,6 +325,11 @@ class Image
             // centers it horizontally
             $x = ($this->width - $width) / 2;
         }
+
+        $x      = (int) $x;
+        $y      = (int) $y;
+        $width  = (int) $width;
+        $height = (int) $height;
 
         $this->paste($image, $x, $y, $width, $height);
         return $this;
@@ -359,7 +376,7 @@ class Image
         return imagestring($this->src, $font, $x, $y, $string, $color);
     }
 
-    public function ttfText($fontSize, $angle, $x, $y, $color, $fontFile, $text)
+    public function ttfText($fontSize, int $angle, int $x, int $y, $color, $fontFile, $text)
     {
         $color  = $this->allocateColor($color);
         return imagettftext($this->src, $fontSize, $angle, $x, $y, $color, $fontFile, $text);
@@ -442,7 +459,7 @@ class Image
     *** Text
     ************************************************/
 
-    public static function imageTtfBbox($fontSize, $angle = 0, $fontFile, $text)
+    public static function imageTtfBbox(int $fontSize, int $angle, string $fontFile, string $text)
     {
         $box            = imagettfbbox($fontSize, $angle, $fontFile, $text);
         $box['width']   = $box[4] - $box[6];
@@ -550,7 +567,7 @@ class Image
             imagecolorallocatealpha($this->src, $r, $g, $b, $a);
     }
 
-    public static function newTrueColorTransparent($width, $height) 
+    public static function newTrueColorTransparent(int $width, int $height) 
     {
         $src = imagecreatetruecolor($width, $height);
         imagesavealpha($src, true);
@@ -582,7 +599,7 @@ class Image
         );
 
         $func   = $functions[$type];
-        $thumb  = $func($file);
+        $thumb  = @$func($file);
 
         if ($type == 'image/png') {            
             imagealphablending($thumb, false);

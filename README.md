@@ -18,7 +18,7 @@ The gd library is procedural and difficult to use, so I created this library to 
 Our reference: 
 
 <img src="example-original.jpg" style="max-width: 100%" />
-<small>Photo by [ipet photo](https://unsplash.com/@ipet_photo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)</small>
+Photo by [ipet photo](https://unsplash.com/@ipet_photo?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 
 
