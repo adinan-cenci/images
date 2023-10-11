@@ -3,9 +3,9 @@ namespace AdinanCenci\Images;
 
 class File extends Image
 {
-    protected $file = '';
+    protected string $file = '';
 
-    protected $readOnly = array('src', 'width', 'height', 'mime', 'ratio', 'file');
+    protected array $readOnly = ['src', 'width', 'height', 'mime', 'ratio', 'file'];
 
     public function __construct(string $file)
     {
@@ -23,7 +23,7 @@ class File extends Image
         }
     }
 
-    public function __get($var) 
+    public function __get(string $var) 
     {
         if ($var == 'isPng') {
             return $this->mime == 'image/png';

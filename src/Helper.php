@@ -1,11 +1,11 @@
 <?php
 namespace AdinanCenci\Images;
 
-class Helper 
+abstract class Helper 
 {
     public static function colorToAlocate($color) 
     {
-        $rgba = Helper::color($color);
+        $rgba = self::color($color);
 
         if (isset($rgba[3]) && $rgba[3] !== false) {
             $perc       = $rgba[3] / 1 * 100;
@@ -17,12 +17,15 @@ class Helper
     }
 
     /**
-     * Normalizes data.
-     * Receives the representation of a color, be in rgb or 
-     * hexadecimal, alpha channel or no and return a 4 item 
-     * array ( red, green, blue, alpha )
+     * Normalizes data, receives the representation of a color, be in rgb or
+     * hexadecimal, alpha channel or no and return a 4 key long array
+     * ( red, green, blue, alpha ).
+     *
+     * @param string|array $color
+     *
+     * @return array
      */
-    public static function color($color) 
+    public static function color($color) : array
     {
         if (is_array($color) && count($color) <= 4) {
             return array_pad($color, 4, null);
@@ -35,23 +38,25 @@ class Helper
         if (is_string($color) && (substr_count($color, '#') || strlen($color) <= 9) ) {
             return Helper::readHexadecimalColor($color);
         }
-        
-        return array();
+
+        return [];
     }
 
     /**
-     * Converts a string containing rgb values 
-     * into an array of parameter that can be passed 
-     * to imagecolorallocate
+     * Reads a rgb color notation and returns it as a 4 key long array
+     * containing the rgba value in decimal.
      * 
      * Accepts:
      * 255,255,255
      * 255,255,255,255
      * 
-     * @param string $string rgb values separated with ,
-     * @return array
+     * @param string $hexadecimal
+     *   Rgb color notation.
+     *
+     * @return int[]
+     *   A 4 key long array containing the rgba value in decimal.
      */
-    public static function readRgbColor($string)
+    public static function readRgbColor(string $string) : array
     {
         $match = preg_match('/([0-9]+),([0-9]+),([0-9]+)(,([0-9.]+))?/', $string, $matches);
 
@@ -64,7 +69,6 @@ class Helper
             $matches[2],
             $matches[3],
         );
-
 
         if (isset($matches[4])) {
 
@@ -83,11 +87,9 @@ class Helper
     }
 
     /**
-     * Converts a string containing an hexadecimal 
-     * representation of a color into an array of 
-     * parameters that can be passed to 
-     * imagecolorallocate
-     * 
+     * Reads a hex color code and returns it as a 4 key long array
+     * containing the rgba value in decimal.
+     *
      * Accepts:
      * 000        shorthand
      * #000       hash prefixed
@@ -95,11 +97,14 @@ class Helper
      * 000000ff   full + alpha
      * #000000    hash prefixed
      * #000000ff  hash prefixed + alpha
-     * 
-     * @param string $hexadecimal Hexadecimal color representation
-     * @return array
+     *
+     * @param string $hexadecimal
+     *   Hexadecimal color code.
+     *
+     * @return int[]
+     *   A 4 key long array containing the rgba value in decimal.
      */
-    public static function readHexadecimalColor($hexadecimal)
+    public static function readHexadecimalColor(string $hexadecimal) : array
     {
         $hexadecimal = trim($hexadecimal, '#');
 
@@ -107,7 +112,7 @@ class Helper
             $red = substr($hexadecimal, 0, 2);
             $hex = array_fill(0, 3, $red);
         } else {
-            $hex    = str_split($hexadecimal, 2);
+            $hex = str_split($hexadecimal, 2);
         }
 
         $rgba   = array_map('hexdec', $hex);

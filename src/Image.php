@@ -3,21 +3,27 @@ namespace AdinanCenci\Images;
 
 class Image
 {
-    protected int $width     = 0;
-    protected int $height    = 0;
+    protected int $width          = 0;
 
-    /** @var float $ratio Quotient between the $width and $height */
-    protected float $ratio   = 0;
+    protected int $height         = 0;
 
-    /** @var image resource identifier $src */
-    protected $src           = null;
+    /**
+     * @var float
+     */
+    protected float $ratio        = 0;
 
-    protected $saveAlpha     = false;
-    protected $alphaBlending = true;
+    /**
+     * @var \GdImage
+     */
+    protected \GdImage $src;
 
-    protected $readOnly      = array('src', 'width', 'height', 'ratio');
+    protected bool $saveAlpha     = false;
 
-    public function __construct(int $width, int $height, $src = null)
+    protected bool $alphaBlending = true;
+
+    protected array $readOnly = ['src', 'width', 'height', 'ratio'];
+
+    public function __construct(int $width, int $height, ?\GdImage $src = null)
     {
         if (! $src) {
             $src = imagecreate($width, $height);
@@ -29,7 +35,7 @@ class Image
         $this->ratio    = $width / $height;
     }
 
-    public function __get($var)
+    public function __get(string $var)
     {
         if (in_array($var, $this->readOnly)) {
             return $this->{$var};
@@ -44,16 +50,23 @@ class Image
         return $this->parseWidthFraction($var);
     }
 
-    /** 
-     * All parameters are optional.
-     * @return Image 
+    /**
+     * Returns a sample of the specified rectangle.
+     * If no parameter is specified, a copy of the image is created.
+     *
+     * @param int $x
+     * @param int $y
+     * @param int|null $width
+     * @param int|null $height
+     *
+     * @return AdinanCenci\Images\Image
      */
-    public function copy($x = 0, $y = 0, $width = null, $height = null)
+    public function copy(int $x = 0, int $y = 0, ?int $width = null, ?int $height = null) : Image
     {
         $width  = $width  ? $width  : $this->width;
         $height = $height ? $height : $this->height;
 
-        $thumb  = self::create($width, $height);
+        $thumb  = self::newTrueColorTransparent($width, $height);
 
         imagecopyresampled($thumb, $this->src, 0, 0, $x, $y, $width, $height, $width, $height);
 
@@ -65,14 +78,20 @@ class Image
     ************************************************/
 
     /**
+     * Resizes the image to the specified dimensions.
+     *
      * If $height is not informed, the ratio will be preserved.
-     * The same works if you inform the height but pass a falsy 
-     * value to $width
+     * The same works if you inform the height but not $width.
+     *
+     * @param int|null $width
+     * @param int|null $height
+     *
+     * @return self
      */
-    public function resize(int $width, ?int $height = null)
+    public function resize(?int $width, ?int $height = null) : Image
     {
         if (!$width && !$height) {
-            trigger_error('Inform the image\s new dimensions');
+            throw new \InvalidArgumentException('Inform the image\s new dimensions');
         }
 
         if ($width && !$height) {
@@ -81,12 +100,10 @@ class Image
             $width = (int) ($height * $this->ratio);
         }
 
-        $newSrc = self::newTrueColorTransparent((int) $width, (int) $height);
+        $newSrc = self::newTrueColorTransparent($width, $height);
 
-        $w = (int) $this->width;
-        $h = (int) $this->height;
-        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $w, $h);
-        $this->src = $newSrc;
+        imagecopyresampled($newSrc, $this->src, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
+        $this->src              = $newSrc;
         $this->saveAlpha        = true;
         $this->alphaBlending    = false;
 
@@ -94,44 +111,57 @@ class Image
         return $this;
     }
 
-    public function crop($x, $y, $width, $height)
+    /**
+     * @param int $x
+     * @param int $y
+     * @param int $width
+     * @param int $height
+     *
+     * @return self
+     */
+    public function crop(int $x, int $y, int $width, int $height) : Image
     {
-        $this->src = imagecrop($this->src, array('x' => $x, 'y' => $y, 'width' => $width, 'height' => $height));
+        $this->src = imagecrop($this->src, ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height]);
         $this->updateDimensions();
         return $this;
     }
 
-    /** 
-     * @param Image/resource $image Accepts an Image object or an image resource identifier.
+    /**
+     * @param AdinanCenci\Images\Image|\GdImage $image
+     * @param int $x
+     * @param int $y
+     * @param int|null $width
+     * @param int|null $height
+     *
      * @return bool 
      */
-    public function paste($image, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null)
+    public function paste($image, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null) : bool
     {
         if ($image instanceof Image) {
             $width      = $width  ? $width  : $image->width;
             $height     = $height ? $height : $image->height;
             $resource   = $image->src;
-        } else if (gettype($image) == 'resource') {
+        } else if ($image instanceof \GdImage) {
             $resource   = $image;
             $width      = $width  ? $width  : imagesx($image);
             $height     = $height ? $height : imagesy($image);
         }
 
-        $width  = (int) $width;
-        $height = (int) $height;
-
         $this->alpha(false);
 
-        $w = (int) $image->width;
-        $h = (int) $image->height;
-        $success = imagecopyresampled($this->src, $resource, $x, $y, 0, 0, $width, $height, $w, $h);
+        $success = imagecopyresampled($this->src, $resource, $x, $y, 0, 0, $width, $height, $image->width, $image->height);
 
         $this->alpha(true);
 
         return $success;
     }
 
-    public function rotate($angle, $color = 'rgba(0,0,0,0)')
+    /**
+     * @param int $angle
+     * 
+     * @return self
+     */
+    public function rotate(int $angle, $color = 'rgba(0,0,0,0)')
     {
         $color          = $this->allocateColor($color);
         $this->src      = imagerotate($this->src, $angle, $color);
@@ -144,16 +174,16 @@ class Image
 
     /***********************************************
     *** Filters
-    ************************************************/    
+    ************************************************/
 
     public function invert() 
     {
-        imagefilter($this->src, IMG_FILTER_NEGATE);    
+        imagefilter($this->src, IMG_FILTER_NEGATE);
     }
 
     public function greyScale() 
     {
-        imagefilter($this->src, IMG_FILTER_GRAYSCALE);    
+        imagefilter($this->src, IMG_FILTER_GRAYSCALE);
     }
 
     /**
@@ -184,42 +214,42 @@ class Image
         imagefilter($this->src, IMG_FILTER_COLORIZE, $r, $g, $b, $a);
     }
 
-    public function edge($times = 1) 
+    public function edge(int $times = 1) 
     {
         for ($a = 1; $a <= $times; $a++) {
             imagefilter($this->src, IMG_FILTER_EDGEDETECT);
         }
     }
 
-    public function boss($times = 1) 
+    public function boss(int $times = 1) 
     {
         for ($a = 1; $a <= $times; $a++) {
             imagefilter($this->src, IMG_FILTER_EMBOSS);
         }
     }
 
-    public function meanRemoval($times = 1) 
+    public function meanRemoval(int $times = 1) 
     {
         for ($a = 1; $a <= $times; $a++) {
             imagefilter($this->src, IMG_FILTER_MEAN_REMOVAL);
         }
     }
 
-    public function gaussianBlur($times = 1) 
+    public function gaussianBlur(int $times = 1) 
     {
         for ($a = 1; $a <= $times; $a++) {
             imagefilter($this->src, IMG_FILTER_GAUSSIAN_BLUR);
-        }        
+        }
     }
 
-    public function blur($times = 1) 
+    public function blur(int $times = 1) 
     {
         for ($a = 1; $a <= $times; $a++) {
             imagefilter($this->src, IMG_FILTER_SELECTIVE_BLUR);
         }
     }
 
-    public function smooth($level) 
+    public function smooth(int $level) 
     {
         imagefilter($this->src, IMG_FILTER_SMOOTH, $level);
     }
@@ -228,7 +258,7 @@ class Image
      * @param int $size Block size in pixels
      * @param bool $advanced Whether to use advanced pixelation effect or not
      */
-    public function pixelate($size, $advanced = false) 
+    public function pixelate(int $size, bool $advanced = false) 
     {
         imagefilter($this->src, IMG_FILTER_PIXELATE, $size, $advanced);
     }
@@ -294,14 +324,17 @@ class Image
 
     /**
      * Fit the entire $image neately inside $this
+     *
      * @param Image $image
-     * @return $this
+     *
+     * @return self
      */
-    public function fit($image, $align = '')
+    public function fit(Image $image) : Image
     {
         $x      = 0;
         $y      = 0;
 
+        // Centers inside of it without changing dimensions.
         if ($this->isLargerThan($image)) {
 
             $width  = $image->width;
@@ -310,6 +343,7 @@ class Image
             $x      = ($this->width - $image->width)   / 2;
             $y      = ($this->height - $image->height) / 2;
 
+        // Centers vertically
         } else if ($this->isThinnerThan($image)) {
 
             $width  = $this->width;
@@ -318,6 +352,7 @@ class Image
             // centers it vertically
             $y = ($this->height - $height) / 2;
 
+        // Centers horizontaly
         } else {
             $width  = $this->height * $image->ratio;
             $height = $this->height;
@@ -335,7 +370,15 @@ class Image
         return $this;
     }
 
-    public function drawEllipse($cx, $cy, $width, $height, $borderColor = array(255, 255, 255))
+    /**
+     * @param int $cx
+     * @param int $cy
+     * @param int $width
+     * @param int $height
+     *
+     * @return bool
+     */
+    public function drawEllipse(int $cx, int $cy, int $width, int $height, $borderColor = [255, 255, 255])
     {
         $borderColor = $this->allocateColor($borderColor);
         return imageellipse($this->src, $cx, $cy, $width, $height, $borderColor);
@@ -386,37 +429,62 @@ class Image
     *** Dimensions
     ************************************************/
 
-    /** @return bool */
-    public function isWiderThan($image)
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isWiderThan(Image $image) : bool
     {
         return $this->width > $image->width;
     }
 
-    /** @return bool */
-    public function isTallerThan($image)
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isTallerThan(Image $image) : bool
     {
         return $this->height > $image->height;
     }
 
-    /** @return bool */
-    public function isNarrowerThan($image) {
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isNarrowerThan(Image $image) : bool
+    {
         return $this->width < $image->width;
     }
 
-    /** @return bool */
-    public function isThickerThan($image)
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isThickerThan(Image $image) : bool
     {
         return $this->ratio > $image->ratio;
     }
 
-    /** @return bool */
-    public function isThinnerThan($image)
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isThinnerThan($image) : bool
     {
         return $this->ratio < $image->ratio;
     }
 
-    /** @return bool */
-    public function isLargerThan($image) 
+    /**
+     * @param AdinanCenci\Images\Image $image
+     *
+     * @return bool
+     */
+    public function isLargerThan(Image $image) : bool
     {
         return $this->isWiderThan($image) && $this->isTallerThan($image);
     }

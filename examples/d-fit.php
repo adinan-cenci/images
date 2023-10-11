@@ -13,7 +13,6 @@ use AdinanCenci\Images\TrueColor;
 
 $image = new File('images/original.jpeg');
 $thumb = new TrueColor(200, 300);
-
 $thumb->fit($image);
 
 /*-----------------------------*/

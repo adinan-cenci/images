@@ -6,8 +6,6 @@ ini_set('display_errors', 1);
 
 require '../vendor/autoload.php';
 
-use AdinanCenci\Images\Image;
-use AdinanCenci\Images\TrueColor;
 use AdinanCenci\Images\File;
 use AdinanCenci\Images\Text;
 

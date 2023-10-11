@@ -8,10 +8,10 @@ require '../vendor/autoload.php';
 
 use AdinanCenci\Images\File;
 
+
 /*-----------------------------*/
 
 $dog = new File('images/original.jpeg');
-
 $png = new File('images/transparent-png.png');
 
 $dog->resize(500);

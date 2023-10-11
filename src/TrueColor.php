@@ -3,7 +3,7 @@ namespace AdinanCenci\Images;
 
 class TrueColor extends Image 
 {
-    public function __construct(int $width, int $height, ?string $src = null) 
+    public function __construct(int $width, int $height, ?\GdImage $src = null) 
     {
         if (! $src) {
             $src = imagecreatetruecolor($width, $height);
@@ -14,7 +14,7 @@ class TrueColor extends Image
         $this->height   = $height;
         $this->ratio    = $width / $height;
 
-        $this->alpha();
+        $this->alpha(true);
         $this->fill('rgba(0,0,0,2)');
     }
 }

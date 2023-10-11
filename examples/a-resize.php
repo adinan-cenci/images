@@ -8,6 +8,7 @@ require '../vendor/autoload.php';
 
 use AdinanCenci\Images\File;
 
+
 /*-----------------------------*/
 
 $file = new File('images/original.jpeg');
