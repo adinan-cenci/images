@@ -102,7 +102,7 @@ $picture->imagePng(null, 80);
 
 The class comes with methods to easily create thumbnails.
 
-### ::fillWith($image, $align = '')
+### ::fill($image, $align = '')
 
 Will fill the entire area with $image, cropping as needed.
 
@@ -110,7 +110,7 @@ Will fill the entire area with $image, cropping as needed.
 $picture = new File('example-original.jpg');
 $thumbnail = new TrueColor(200, 300);
 
-$thumbnail->fillWith($picture);
+$thumbnail->fill($picture);
 
 header('Content-type: image/png');
 $thumbnail->imagePng();

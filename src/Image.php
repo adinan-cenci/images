@@ -63,8 +63,8 @@ class Image
      */
     public function copy(int $x = 0, int $y = 0, ?int $width = null, ?int $height = null) : Image
     {
-        $width  = $width  ? $width  : $this->width;
-        $height = $height ? $height : $this->height;
+        $width  = !is_null($width)  ? $width  : $this->width;
+        $height = !is_null($height) ? $height : $this->height;
 
         $thumb  = self::newTrueColorTransparent($width, $height);
 
@@ -95,9 +95,9 @@ class Image
         }
 
         if ($width && !$height) {
-            $height = (int) ($width / $this->ratio);
+            $height = (int) ($width  / $this->ratio);
         } elseif (!$width && $height) {
-            $width = (int) ($height * $this->ratio);
+            $width  = (int) ($height * $this->ratio);
         }
 
         $newSrc = self::newTrueColorTransparent($width, $height);
@@ -127,6 +127,8 @@ class Image
     }
 
     /**
+     * Pastes $image on top of this.
+     *
      * @param AdinanCenci\Images\Image|\GdImage $image
      * @param int $x
      * @param int $y
@@ -135,17 +137,11 @@ class Image
      *
      * @return bool 
      */
-    public function paste($image, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null) : bool
+    public function paste(Image $image, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null) : bool
     {
-        if ($image instanceof Image) {
-            $width      = $width  ? $width  : $image->width;
-            $height     = $height ? $height : $image->height;
-            $resource   = $image->src;
-        } else if ($image instanceof \GdImage) {
-            $resource   = $image;
-            $width      = $width  ? $width  : imagesx($image);
-            $height     = $height ? $height : imagesy($image);
-        }
+        $width      = !is_null($width)  ? $width  : $image->width;
+        $height     = !is_null($height) ? $height : $image->height;
+        $resource   = $image->src;
 
         $this->alpha(false);
 
@@ -159,12 +155,15 @@ class Image
     /**
      * @param int $angle
      * 
+     * @param string|array $backgroundColor
+     *   Rgba value, it also accepts hexadecimal values.
+     *
      * @return self
      */
-    public function rotate(int $angle, $color = 'rgba(0,0,0,0)')
+    public function rotate(int $angle, $backgroundColor = 'rgba(0,0,0,0)')
     {
-        $color          = $this->allocateColor($color);
-        $this->src      = imagerotate($this->src, $angle, $color);
+        $color     = $this->allocateColor($backgroundColor);
+        $this->src = imagerotate($this->src, $angle, $color);
 
         $this->saveAlpha();
 
@@ -283,17 +282,18 @@ class Image
     ************************************************/
 
     /** $paste $image at center of this one */
-    public function centerIt($image)
+    public function centerIt(Image $image)
     {
         $x = (int) (($this->width  - $image->width)  / 2);
         $y = (int) (($this->height - $image->height) / 2);
+
         return $this->paste($image, $x, $y, $image->width, $image->height);
     }
 
     /**
      * Will fill $this with $image
      */
-    public function fillWith($image, $align = '')
+    public function fill(Image $image, string $align = '')
     {
         $x      = 0;
         $y      = 0;
@@ -334,17 +334,16 @@ class Image
         $x      = 0;
         $y      = 0;
 
-        // Centers inside of it without changing dimensions.
         if ($this->isLargerThan($image)) {
-
+            // Centers inside of it without changing dimensions.
             $width  = $image->width;
             $height = $image->height;
 
             $x      = ($this->width - $image->width)   / 2;
             $y      = ($this->height - $image->height) / 2;
 
-        // Centers vertically
         } else if ($this->isThinnerThan($image)) {
+            // Centers vertically
 
             $width  = $this->width;
             $height = $this->width / $image->ratio;
@@ -352,8 +351,8 @@ class Image
             // centers it vertically
             $y = ($this->height - $height) / 2;
 
-        // Centers horizontaly
         } else {
+            // Centers horizontaly
             $width  = $this->height * $image->ratio;
             $height = $this->height;
 
@@ -389,10 +388,10 @@ class Image
      * @param int|array|string $color
      * @return bool
      */
-    public function filledRectangle($color, $x = 0, $y = 0, $x2 = null, $y2 = null)
+    public function filledRectangle($color, int $x = 0, int $y = 0, ?int $x2 = null, ?int $y2 = null)
     {
-        $x2 = $x2 ? $x2 : $this->width;
-        $y2 = $y2 ? $y2 : $this->height;
+        $x2 = !is_null($x2) ? $x2 : $this->width;
+        $y2 = !is_null($y2) ? $y2 : $this->height;
 
         $color = $this->allocateColor($color);
         return imagefilledrectangle($this->src, $x, $y, $x2, $y2, $color);
@@ -406,7 +405,7 @@ class Image
         return $this->filledRectangle($color, $x, $y, $x2, $y2);
     }
 
-    public function fill($color)
+    public function colorFill($color)
     {
         $color = $this->allocateColor($color);
         imagefill($this->src, 0, 0, $color);
@@ -610,7 +609,7 @@ class Image
         return $this->getWidthFraction($fr['numerator'], $fr['denominator']);
     }
 
-    protected function parseHeightFraction($str) 
+    protected function parseHeightFraction(string $str) 
     {
         if (! $fr = Helper::parseFraction($str)) {
             return null;
@@ -621,8 +620,12 @@ class Image
 
     //--------------
 
-    /** makes sure that $color is a color identifier */
-    public function allocateColor($color)
+    /** 
+     * @param string|array $color
+     *
+     * @return int
+     */
+    public function allocateColor($color) : int
     {
         $r = $g = $b = $a = 0;
 
@@ -630,12 +633,12 @@ class Image
 
         list($r, $g, $b, $a) = $rgba;
 
-        return $a === false ?
+        return $a === null ?
             imagecolorallocate($this->src, $r, $g, $b) : 
             imagecolorallocatealpha($this->src, $r, $g, $b, $a);
     }
 
-    public static function newTrueColorTransparent(int $width, int $height) 
+    public static function newTrueColorTransparent(int $width, int $height) : \GdImage
     {
         $src = imagecreatetruecolor($width, $height);
         imagesavealpha($src, true);
@@ -645,7 +648,7 @@ class Image
         return $src;
     }
 
-    public static function createFromString($data) 
+    public static function createFromString($data) : Image
     {
         //$data = base64_decode($data);
         $src  = imagecreatefromstring($data);
@@ -655,7 +658,7 @@ class Image
         return new self($w, $h, $src);
     }
 
-    protected static function createFromType($file, $type)
+    protected static function createFromType(string $file, string $type) : \GdImage
     {
         $functions = array(
             'image/gif'             => 'imagecreatefromgif',
@@ -677,7 +680,7 @@ class Image
         return $thumb;
     }
 
-    protected static function image($func, $src, $filename = null, $quality = 100)
+    protected static function image(string $func, \GdImage $src, ?string $filename = null, $quality = 100)
     {
         if ($func == 'imagepng') {
             $quality = round($quality / 14.28);

@@ -30,7 +30,7 @@ class File extends Image
         }
 
         if ($var == 'isJpg') {
-            return in_array($this->mime, array('image/jpg', 'image/jpeg'));
+            return in_array($this->mime, ['image/jpg', 'image/jpeg']);
         }
 
         if ($var == 'isGif') {

@@ -3,11 +3,18 @@ namespace AdinanCenci\Images;
 
 abstract class Helper 
 {
+    /**
+     * Return values to work with the gd library.
+     *
+     * @param string|int[] $color
+     *
+     * @return array
+     */
     public static function colorToAlocate($color) 
     {
         $rgba = self::color($color);
 
-        if (isset($rgba[3]) && $rgba[3] !== false) {
+        if (isset($rgba[3]) && $rgba[3] !== null) {
             $perc       = $rgba[3] / 1 * 100;
             $alpha      = ceil(127 - (127 / 100 * $perc));
             $rgba[3]    = $alpha;
@@ -21,7 +28,7 @@ abstract class Helper
      * hexadecimal, alpha channel or no and return a 4 key long array
      * ( red, green, blue, alpha ).
      *
-     * @param string|array $color
+     * @param string|int[] $color
      *
      * @return array
      */
@@ -53,7 +60,7 @@ abstract class Helper
      * @param string $hexadecimal
      *   Rgb color notation.
      *
-     * @return int[]
+     * @return array
      *   A 4 key long array containing the rgba value in decimal.
      */
     public static function readRgbColor(string $string) : array
@@ -64,14 +71,14 @@ abstract class Helper
             return null;
         }
 
-        $rgba = array(
-            $matches[1],
-            $matches[2],
-            $matches[3],
-        );
+        $rgba = [
+            (int) $matches[1],
+            (int) $matches[2],
+            (int) $matches[3],
+            null
+        ];
 
         if (isset($matches[4])) {
-
             $alpha = (float) $matches[5];
 
             if ($alpha > 1) {
@@ -79,8 +86,6 @@ abstract class Helper
             }
 
             $rgba[3] = $alpha;
-        } else {
-            $rgba[3] = false;
         }
 
         return $rgba;
@@ -101,7 +106,7 @@ abstract class Helper
      * @param string $hexadecimal
      *   Hexadecimal color code.
      *
-     * @return int[]
+     * @return array
      *   A 4 key long array containing the rgba value in decimal.
      */
     public static function readHexadecimalColor(string $hexadecimal) : array

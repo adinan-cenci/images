@@ -96,7 +96,7 @@ class Repeater
         //------------
 
         $thumb = new TrueColor($width, $height);
-        $thumb->fill('rgba(255,255,255,127)');
+        $thumb->colorFill('rgba(255,255,255,127)');
 
         //------------
 

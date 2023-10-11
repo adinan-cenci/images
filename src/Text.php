@@ -183,7 +183,7 @@ class Text
         $h = (int) $this->imageHeight;
 
         $image = new Image($w, $h);
-        $image->fill($this->background);
+        $image->colorFill($this->background);
 
         return $image;
     }
@@ -208,7 +208,7 @@ class Text
     {
         $image          = $this->prepareImage();
         $lineHeight     = Helper::pointToPixel($this->lineHeight);
-        
+
         $contentWidth   = $this->imageWidth - $this->paddingLeft - $this->paddingRight;
         $y              = $lineHeight + $this->paddingTop;
 
