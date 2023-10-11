@@ -177,12 +177,12 @@ class Image
 
     public function invert() 
     {
-        imagefilter($this->src, IMG_FILTER_NEGATE);
+        return imagefilter($this->src, IMG_FILTER_NEGATE);
     }
 
     public function greyScale() 
     {
-        imagefilter($this->src, IMG_FILTER_GRAYSCALE);
+        return imagefilter($this->src, IMG_FILTER_GRAYSCALE);
     }
 
     /**
@@ -190,7 +190,7 @@ class Image
      */
     public function brightness($level) 
     {
-        imagefilter($this->src, IMG_FILTER_BRIGHTNESS, $level);
+        return imagefilter($this->src, IMG_FILTER_BRIGHTNESS, $level);
     }
 
     /**
@@ -201,7 +201,7 @@ class Image
      */
     public function contrast($level) 
     {
-        imagefilter($this->src, IMG_FILTER_CONTRAST, $level);
+        return imagefilter($this->src, IMG_FILTER_CONTRAST, $level);
     }
 
     /**
@@ -210,47 +210,67 @@ class Image
      */
     public function colorize($r, $g, $b, $a = 0) 
     {
-        imagefilter($this->src, IMG_FILTER_COLORIZE, $r, $g, $b, $a);
+        return imagefilter($this->src, IMG_FILTER_COLORIZE, $r, $g, $b, $a);
     }
 
     public function edge(int $times = 1) 
     {
+        $success = false;
+
         for ($a = 1; $a <= $times; $a++) {
-            imagefilter($this->src, IMG_FILTER_EDGEDETECT);
+            $success = imagefilter($this->src, IMG_FILTER_EDGEDETECT);
         }
+
+        return $success;
     }
 
     public function boss(int $times = 1) 
     {
+        $success = false;
+
         for ($a = 1; $a <= $times; $a++) {
-            imagefilter($this->src, IMG_FILTER_EMBOSS);
+            $success = imagefilter($this->src, IMG_FILTER_EMBOSS);
         }
+
+        return $success;
     }
 
     public function meanRemoval(int $times = 1) 
     {
+        $success = false;
+
         for ($a = 1; $a <= $times; $a++) {
-            imagefilter($this->src, IMG_FILTER_MEAN_REMOVAL);
+            $success = imagefilter($this->src, IMG_FILTER_MEAN_REMOVAL);
         }
+
+        return $success;
     }
 
     public function gaussianBlur(int $times = 1) 
     {
+        $success = false;
+
         for ($a = 1; $a <= $times; $a++) {
-            imagefilter($this->src, IMG_FILTER_GAUSSIAN_BLUR);
+            $success = imagefilter($this->src, IMG_FILTER_GAUSSIAN_BLUR);
         }
+
+        return $success;
     }
 
     public function blur(int $times = 1) 
     {
+        $success = false;
+
         for ($a = 1; $a <= $times; $a++) {
-            imagefilter($this->src, IMG_FILTER_SELECTIVE_BLUR);
+            $success = imagefilter($this->src, IMG_FILTER_SELECTIVE_BLUR);
         }
+
+        return $success;
     }
 
     public function smooth(int $level) 
     {
-        imagefilter($this->src, IMG_FILTER_SMOOTH, $level);
+        return imagefilter($this->src, IMG_FILTER_SMOOTH, $level);
     }
 
     /**
@@ -259,7 +279,7 @@ class Image
      */
     public function pixelate(int $size, bool $advanced = false) 
     {
-        imagefilter($this->src, IMG_FILTER_PIXELATE, $size, $advanced);
+        return imagefilter($this->src, IMG_FILTER_PIXELATE, $size, $advanced);
     }
 
     /**
@@ -274,15 +294,21 @@ class Image
             return false;
         }
 
-        imagefilter($this->src, IMG_FILTER_SCATTER, $substraction, $addition, $color);
+        return imagefilter($this->src, IMG_FILTER_SCATTER, $substraction, $addition, $color);
     }
 
     /***********************************************
     *** Helpful methods
     ************************************************/
 
-    /** $paste $image at center of this one */
-    public function centerIt(Image $image)
+    /**
+     * $paste $image at center of this one.
+     *
+     * @param Image $image
+     *
+     * @return self
+     */
+    public function centerIt(Image $image) : Image
     {
         $x = (int) (($this->width  - $image->width)  / 2);
         $y = (int) (($this->height - $image->height) / 2);
@@ -291,9 +317,13 @@ class Image
     }
 
     /**
-     * Will fill $this with $image
+     * Fill $this with $image.
+     * 
+     * @param Image $image
+     *
+     * @return self
      */
-    public function fill(Image $image, string $align = '')
+    public function fill(Image $image) : Image
     {
         $x      = 0;
         $y      = 0;
@@ -367,6 +397,43 @@ class Image
 
         $this->paste($image, $x, $y, $width, $height);
         return $this;
+    }
+
+    /**
+     * Will behave much like ::fit(), but it will also distort dimensions
+     * of $image if $this is larger.
+     *
+     * @param Image $image
+     *
+     * @return self
+     */
+    public function frame(Image $image) : Image
+    {
+        if ($this->isLargerThan($image)) {
+            if ($this->isThinnerThan($image)) {
+                $width  = $this->width;
+                $height = $width / $image->ratio;
+
+                $x = 0;
+                $y = ($this->height - $height) / 2;
+            } else {
+                $height = $this->height;
+                $width  = $height * $image->ratio;
+
+                $x = ($this->width - $width) / 2;
+                $y = 0;
+            }
+
+            $x      = (int) $x;
+            $y      = (int) $y;
+            $width  = (int) $width;
+            $height = (int) $height;
+
+            $this->paste($image, $x, $y, $width, $height);
+            return $this;
+        } else {
+            return $this->fit($image);
+        }
     }
 
     /**
